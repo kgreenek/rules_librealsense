@@ -1,0 +1,9 @@
+workspace(name = "rules_librealsense")
+
+load("//:repositories.bzl", "librealsense_repositories")
+
+librealsense_repositories()
+
+load("//:deps.bzl", "librealsense_deps")
+
+librealsense_deps()

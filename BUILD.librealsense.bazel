@@ -1,0 +1,191 @@
+load("@rules_librealsense//:cc_util.bzl", "cc_hdrs", "cc_srcs", "cc_srcs_and_hdrs")
+
+COMMON_UTILITIES_SRCS = [
+    "common/utilities/os/hresult.h",
+    "common/utilities/time/common.h",
+    "common/utilities/time/l500/get-mfr-ww.cpp",
+    "common/utilities/time/l500/get-mfr-ww.h",
+    "common/utilities/time/periodic_timer.h",
+    "common/utilities/time/stopwatch.h",
+    "common/utilities/time/timer.h",
+    "common/utilities/time/waiting-on.h",
+    "common/utilities/time/work_week.cpp",
+    "common/utilities/time/work_week.h",
+]
+
+# These get included in the librealsense library, even though they are not ever explicitly added to
+# the include path or list of sources.
+COMMON_NAUGHTY_SRCS = [
+    "common/decompress-huffman.h",
+    "common/fw/firmware-version.h",
+    "common/parser.hpp",
+]
+
+cc_library(
+    name = "librealsense",
+    srcs = glob(
+        COMMON_UTILITIES_SRCS +
+        COMMON_NAUGHTY_SRCS +
+        cc_srcs_and_hdrs("src/*") +
+        cc_srcs_and_hdrs("src/algo/**/*") +
+        cc_srcs_and_hdrs("src/core/**/*") +
+        cc_srcs_and_hdrs("src/ds5/**/*") +
+        cc_srcs_and_hdrs("src/fw-logs/**/*") +
+        cc_srcs_and_hdrs("src/fw-update/**/*") +
+        cc_srcs_and_hdrs("src/hid/**/*") +
+        cc_srcs_and_hdrs("src/ivcam/**/*") +
+        cc_srcs_and_hdrs("src/l500/**/*") +
+        cc_srcs_and_hdrs("src/media/**/*") +
+        cc_srcs_and_hdrs("src/mock/**/*") +
+        cc_srcs_and_hdrs("src/proc/**/*") +
+        cc_srcs_and_hdrs("src/usb/**/*"),
+        cc_srcs_and_hdrs("third-party/*") +
+        cc_srcs_and_hdrs("third-party/imgui/**/*") +
+        cc_srcs_and_hdrs("third-party/sqlite/**/*") +
+        cc_srcs_and_hdrs("third-party/rapidxml/**/*"),
+    ),
+    copts = [
+        "-Iexternal/librealsense/common",
+        "-Iexternal/librealsense/src",
+        "-Iexternal/librealsense/src/ds5",
+        "-Iexternal/librealsense/src/ds5/advanced_mode",
+        "-Iexternal/librealsense/src/l500",
+        "-Iexternal/librealsense/src/mock",
+        "-Iexternal/librealsense/src/proc",
+        # Hack the include path to support naughty angle bracket includes from sub-projects.
+        #"-isystem external/librealsense/src",
+        #"-isystem external/librealsense/src/media",
+        #"-isystem external/librealsense/src/media/playback",
+        "-Wno-catch-value",
+        "-Wno-misleading-indentation",
+        "-Wno-reorder",
+        "-Wno-sign-compare",
+        "-Wno-switch",
+        "-Wno-unknown-pragmas",
+        "-Wno-unused-but-set-variable",
+        "-Wno-unused-variable",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":librealsense2_hdrs",
+        ":realsense_rosbag",
+    ],
+)
+
+cc_library(
+    name = "librealsense2_hdrs",
+    hdrs = glob(cc_hdrs("include/librealsense2/**/*")),
+    includes = ["include"],
+)
+
+cc_library(
+    name = "realsense_rosbag",
+    srcs = glob(
+        cc_srcs_and_hdrs("third-party/realsense-file/boost/**/*") +
+        cc_srcs_and_hdrs("third-party/realsense-file/lz4/**/*") +
+        cc_srcs("third-party/realsense-file/rosbag/**/*"),
+    ),
+    hdrs = glob(cc_hdrs("third-party/realsense-file/rosbag/**/*")),
+    copts = [
+        "-Iexternal/librealsense/third-party/realsense-file/rosbag/roslz4/include/roslz4",
+    ],
+    includes = [
+        "third-party/realsense-file/boost",
+        "third-party/realsense-file/lz4",
+        "third-party/realsense-file/rosbag/console_bridge/include",
+        "third-party/realsense-file/rosbag/cpp_common/include",
+        "third-party/realsense-file/rosbag/msgs",
+        "third-party/realsense-file/rosbag/rosbag_storage/include",
+        "third-party/realsense-file/rosbag/roscpp_serialization/include",
+        "third-party/realsense-file/rosbag/roscpp_traits/include",
+        "third-party/realsense-file/rosbag/roslz4/include",
+        "third-party/realsense-file/rosbag/rostime/include",
+    ],
+    textual_hdrs = ["third-party/realsense-file/lz4/lz4.c"],
+    #deps = [
+    #    "@boost//:core",
+    #    "@boost//:function",
+    #],
+)
+
+# TODO(kgreenek): Support //common/fw.
+
+LIBREALSENSE_SRCS = [
+    "src/algo.cpp",
+    "src/algo.h",
+    "src/api.h",
+    "src/archive.cpp",
+    "src/archive.h",
+    "src/auto-calibrated-device.h",
+    "src/backend.cpp",
+    "src/backend.h",
+    "src/basics.h",
+    "src/calibrated-sensor.h",
+    "src/callback-invocation.h",
+    "src/color-sensor.h",
+    "src/command_transfer.h",
+    "src/composite-frame.h",
+    "src/concurrency.h",
+    "src/context.cpp",
+    "src/context.h",
+    "src/debug-stream-sensor.h",
+    "src/depth-sensor.h",
+    "src/device-calibration.h",
+    "src/device.cpp",
+    "src/device.h",
+    "src/device_hub.cpp",
+    "src/device_hub.h",
+    "src/dispatcher.cpp",
+    "src/easyloggingpp.h",
+    "src/environment.cpp",
+    "src/environment.h",
+    "src/error-handling.cpp",
+    "src/error-handling.h",
+    "src/firmware_logger_device.cpp",
+    "src/firmware_logger_device.h",
+    "src/frame-archive.h",
+    "src/frame.cpp",
+    "src/frame.h",
+    "src/global_timestamp_reader.cpp",
+    "src/global_timestamp_reader.h",
+    "src/hdr-config.cpp",
+    "src/hdr-config.h",
+    "src/hw-monitor.cpp",
+    "src/hw-monitor.h",
+    "src/image-avx.cpp",
+    "src/image-avx.h",
+    "src/image.cpp",
+    "src/image.h",
+    "src/librealsense-exception.h",
+    "src/log.cpp",
+    "src/log.h",
+    "src/max-usable-range-sensor.h",
+    "src/metadata-parser.h",
+    "src/metadata.h",
+    "src/option.cpp",
+    "src/option.h",
+    "src/points.cpp",
+    "src/points.h",
+    "src/polling-device-watcher.h",
+    "src/rs.cpp",
+    "src/sensor.cpp",
+    "src/sensor.h",
+    "src/serializable-interface.h",
+    "src/serialized-utilities.cpp",
+    "src/serialized-utilities.h",
+    "src/small-heap.h",
+    "src/software-device.cpp",
+    "src/software-device.h",
+    "src/source.cpp",
+    "src/source.h",
+    "src/stream.cpp",
+    "src/stream.h",
+    "src/sync.cpp",
+    "src/sync.h",
+    "src/terminal-parser.cpp",
+    "src/terminal-parser.h",
+    "src/to-string.cpp",
+    "src/types.cpp",
+    "src/types.h",
+    "src/verify.c",
+]
